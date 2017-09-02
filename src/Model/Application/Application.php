@@ -14,7 +14,8 @@ class Application
         $this->container = $container;
 
         if (!$container->has('configuration')) {
-            throw new \RuntimeException('There\'s not configuration to load, application can\'t be initilialized', 500);
+            $message = 'There\'s not configuration to be loaded, application can\'t be initilialized';
+            throw new \RuntimeException($message, 500);
         }
 
         $this->configuration = $container->get('configuration');
@@ -25,13 +26,30 @@ class Application
     {
 
         if (empty($this->configuration['routes'])) {
-            throw new \RuntimeException('There\'s not routes to load, application can\'t be initilialized', 500);
+            $message = 'There\'s not routes to be loaded, application can\'t be initilialized';
+            throw new \RuntimeException($message, 500);
         }
 
         $routes = $this->configuration['routes'];
 
 
+        /**
+         * @var route RouteInterface
+         */
         foreach ($routes as $route) {
+
+            $controller = $route->getController();
+            $action = $route->getAction();
+
+            if (!$controller instanceof ControllerInterface) {
+                $message = "Controller {$controller} does not exists";
+                throw new \InvalidArgumentException($message, 500);
+            }
+
+            if (!method_exists($controller, $action)) {
+                $message = "Action {$action} does not exists on controller {$controller}";
+                throw new \InvalidArgumentException($message, 500);
+            }
 
         }
 
