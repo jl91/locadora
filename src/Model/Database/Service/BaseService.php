@@ -84,7 +84,7 @@ abstract class BaseService implements ServiceInterface
             $pattern .= implode(' ', $andWhere);
         }
 
-        $query = sprintf($pattern, '*', $entity->getTableName(), '1');
+        $query = sprintf($pattern, $columns, $entity->getTableName(), '1');
 
 
         $statement = $this->connection
