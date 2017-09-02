@@ -19,8 +19,9 @@ try {
 
     $configurations = require_once APP_ROOT . DS . 'src' . DS . 'config' . DS . 'config.global.php';
     $routes = require_once APP_ROOT . DS . 'src' . DS . 'config' . DS . 'routes.php';
+    $di = require_once APP_ROOT . DS . 'src' . DS . 'config' . DS . 'di.php';
 
-    $containerData = array_merge($configurations, $routes);
+    $containerData = array_merge($configurations, $routes, $di);
 
     $container = new Container($containerData);
     $containerAdapter = new Psr11Adapter($container);
