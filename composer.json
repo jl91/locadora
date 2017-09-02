@@ -11,6 +11,12 @@
         "squizlabs/PHP_CodeSniffer": "^3.0",
         "phpmd/phpmd": "^2.6"
     },
+    "autoload":{
+        "psr-4":{
+            "VideoPlace\\": "./src",
+            "tests\\VideoPlace\\": "./tests"
+        }
+    },
     "license": "LGPL",
     "authors": [
         {
