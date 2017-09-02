@@ -8,6 +8,6 @@ class IndexController extends DefaultController
 {
     public function indexAction()
     {
-        return new View('index', ['foo' => 'bar']);
+        return new View('index', ['content' => 'Hello World']);
     }
 }

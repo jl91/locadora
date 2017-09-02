@@ -43,7 +43,7 @@ class DefaultViewParser implements ViewInterface
     {
         if (!empty($this->vars)) {
             foreach ($this->vars as $varName => $varValue) {
-                $content = str_replace($varName, $varName, $content);
+                $content = str_replace(':' . $varName . ':', $varValue, $content);
             }
         }
 
