@@ -1,7 +1,7 @@
 <?php
 
 use Pimple\Container;
-use VideoPlace\Model\Database\ConnectionFactory;
+use VideoPlace\Model\Database\Connection\ConnectionFactory;
 use Pimple\Psr11\Container as ContainerAdapter;
 
 return [

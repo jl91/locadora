@@ -1,6 +1,6 @@
 <?php
 
-namespace VideoPlace\Model\Database;
+namespace VideoPlace\Model\Database\Connection;
 
 
 use Psr\Container\ContainerInterface;
