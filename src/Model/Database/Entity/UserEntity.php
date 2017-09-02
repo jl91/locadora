@@ -24,6 +24,11 @@ class UserEntity implements EntityInterface
      */
     private $createdAt = null;
 
+    public function getIdColumnName(): string
+    {
+        return 'id';
+    }
+
     /**
      * @return int
      */
