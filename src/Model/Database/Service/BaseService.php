@@ -112,14 +112,19 @@ abstract class BaseService implements ServiceInterface
     public function delete(EntityInterface $entity): bool
     {
         $idColumnName = $entity->getIdColumnName();
-        $query = sprintf(static::DELETE_QUERY, $idColumnName . ' = :' . $idColumnName);
+
+        $pattern = static::DELETE_QUERY;
+
+        $query = sprintf($pattern, $entity->getTableName(), $idColumnName . ' = :' . $idColumnName);
 
         $statement = $this->connection
             ->prepare($query);
 
         $id = $entity->toArray()[$idColumnName];
 
-        return $statement->execute([$idColumnName => $id]);
+        $statement->execute([$idColumnName => $id]);
+
+        return $statement->rowCount() > 0;
     }
 
     /**

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Usuários</title>
+</head>
+
+<body>
+
+<form method="post" action="/users/create">
+    <label for="name">Name: </label>
+    <input name="name" id="name" type="text">
+    <br>
+    <label for="email">Email: </label>
+    <input name="email" id="email" type="text">
+    <input type="submit" value="add new User">
+</form>
+
+<hr>
+
+<table>
+    <caption>Lista de Usuários</caption>
+    <thead>
+    <tr>
+        <th>#id</th>
+        <th>nome</th>
+        <th>email</th>
+        <th>data de criação</th>
+        <th>Ações</th>
+    </tr>
+    <tbody>
+    :table-body:
+    </tbody>
+    </thead>
+</table>
+
+</body>
+
+</html>

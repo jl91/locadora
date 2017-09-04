@@ -24,12 +24,13 @@ abstract class DefaultController implements ControllerInterface
 
     public function getParams(): array
     {
-        return $_SERVER['request'];
+        return $_REQUEST;
     }
 
     public function getQuery(): array
     {
-        return $_SERVER['QUERY_STRING'];
+        parse_str($_SERVER['QUERY_STRING'], $queryStringAsArray);
+        return $queryStringAsArray;
     }
 
     public function isPost(): bool

@@ -77,6 +77,7 @@ class Application
     private function getRequestRoute(): RouteInterface
     {
         $uri = $_SERVER['REQUEST_URI'];
+
         $pieces = explode('?', $uri);
         $path = $pieces[0];
         $basePattern = '/%s/';
@@ -86,7 +87,8 @@ class Application
             $pattern = sprintf($basePattern, urlencode($path));
             $subject = sprintf($basePattern, urlencode($route->getPattern()));
 
-            $matches = preg_match($pattern, $subject);
+            $matches = preg_match($pattern, $subject, $params);
+
             if ($matches === 1) {
                 return $route;
             }
