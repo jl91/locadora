@@ -21,6 +21,11 @@ return [
             'action' => 'createAction'
         ],
         [
+            'pattern' => '/users/read',
+            'controller' => Controller\UsersController::class,
+            'action' => 'readAction'
+        ],
+        [
             'pattern' => '/users/update',
             'controller' => Controller\UsersController::class,
             'action' => 'updateAction'

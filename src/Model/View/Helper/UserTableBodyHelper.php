@@ -35,6 +35,8 @@ class UserTableBodyHelper implements HelperInterface
 
             $template .= "  <td>" . PHP_EOL;
             $template .= " <a href='/users/delete?id={$value->getId()}'> apagar </a>" . PHP_EOL;
+            $template .= " |" . PHP_EOL;
+            $template .= " <a href='/users/read?id={$value->getId()}'> ver </a>" . PHP_EOL;
             $template .= "  </td>" . PHP_EOL;
 
             $template .= "</tr>" . PHP_EOL;

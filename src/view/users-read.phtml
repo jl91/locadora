@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Usuário :name:</title>
+</head>
+
+<body>
+<h1>your are seeing data from user : :name:</h1>
+
+<form method="post" action="/users/update">
+    <label for="name">Name: </label>
+    <input name="name" id="name" value=":name:" type="text">
+    <br>
+    <label for="email">Email: </label>
+    <input name="email" value=":email:" id="email" type="text">
+    <input type="hidden" name="id" value=":id:">
+    <input type="submit" value="save User data">
+</form>
+
+</body>
+
+</html>
