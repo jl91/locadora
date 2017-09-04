@@ -11,4 +11,6 @@ interface EntityInterface
     public function getTableName(): string;
 
     public function toArray(): array;
+
+    public function extract(): array;
 }

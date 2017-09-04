@@ -9,10 +9,11 @@ abstract class BaseService implements ServiceInterface
 {
     const INSERT_QUERY = "INSERT INTO %s (%s) VALUES (%s)";
     const SELECT_QUERY = "SELECT %s FROM %s ";
-    const SELECT_WHERE_QUERY = "WHERE %s ";
+    const WHERE_QUERY = "WHERE %s ";
+    const LIMIT_QUERY = "LIMIT %d ";
     const SELECT_AND_WHERE_QUERY = "AND %s ";
-    const DELETE_QUERY = "DELETE FROM %s " . self::SELECT_WHERE_QUERY;
-    const UPDATE_QUERY = "UPDATE %s SET %s " . self::SELECT_WHERE_QUERY;
+    const DELETE_QUERY = "DELETE FROM %s " . self::WHERE_QUERY;
+    const UPDATE_QUERY = "UPDATE %s SET %s " . self::WHERE_QUERY;
 
 
     public $connection = null;
@@ -22,7 +23,7 @@ abstract class BaseService implements ServiceInterface
         $this->connection = $connection;
     }
 
-    public function persist(EntityInterface $entity): bool
+    public function save(EntityInterface $entity): EntityInterface
     {
         $data = $entity->toArray();
 
@@ -30,12 +31,12 @@ abstract class BaseService implements ServiceInterface
             return $this->merge($entity);
         }
 
-        return $this->save($entity);
+        return $this->persist($entity);
     }
 
-    public function save(EntityInterface $entity): bool
+    public function persist(EntityInterface $entity): EntityInterface
     {
-        $data = $entity->toArray();
+        $data = $entity->extract();
 
         $columns = array_keys($data);
 
@@ -52,24 +53,84 @@ abstract class BaseService implements ServiceInterface
         $statement = $this->connection
             ->prepare($query);
 
-        return $statement->execute($data);
+        $statement->execute($data);
+
+        $idColumnName = $entity->getIdColumnName();
+
+        $lastInsertedId = $this->connection
+            ->lastInsertId();
+
+        $entity->{'set' . ucfirst($idColumnName)}($lastInsertedId);
+
+        return $entity;
 
     }
 
-    public function merge(EntityInterface $entity): bool
+    public function merge(EntityInterface $entity): EntityInterface
     {
 
+        $data = $entity->toArray();
+        $idColumnName = $entity->getIdColumnName();
+        $id = $data[$idColumnName];
+
+        $databaseEntity = $this->findOneBy(['id' => $id]);
+
+        if (!$databaseEntity instanceof EntityInterface) {
+            throw new \RuntimeException("Entity not found on database", 500);
+        }
+
+        //PDO não returna true se o valor de update for idêntico ao do banco de dados
+        if ($databaseEntity->toArray() === $data) {
+            return true;
+        }
+        $databaseEntity->__construct($data);
+
+        $data = $databaseEntity->extract();
+
+        $pattern = static::UPDATE_QUERY;
+
+        $fieldsToUpdate = [];
+
+        foreach ($data as $key => $value) {
+            $fieldsToUpdate[] = $key . ' = :' . $key;
+        }
+
+        $fieldsToUpdate = implode(', ', $fieldsToUpdate);
+
+        $whereClause = $idColumnName . ' = :' . $idColumnName;
+
+        $query = sprintf($pattern, $entity->getTableName(), $fieldsToUpdate, $whereClause);
+
+        $statement = $this->connection
+            ->prepare($query);
+
+        $statement->execute($data);
+
+        return $databaseEntity;
     }
 
     public function delete(EntityInterface $entity): bool
     {
+        $idColumnName = $entity->getIdColumnName();
+        $query = sprintf(static::DELETE_QUERY, $idColumnName . ' = :' . $idColumnName);
 
+        $statement = $this->connection
+            ->prepare($query);
+
+        $id = $entity->toArray()[$idColumnName];
+
+        return $statement->execute([$idColumnName => $id]);
     }
 
-    public function findBy(array $data = [], EntityInterface $entity): array
+    /**
+     * @param array $data
+     * @return array
+     * @todo, métodos de busca devem ser movidos para um repository
+     */
+    public function findBy(array $data = []): array
     {
 
-        $pattern = static::SELECT_QUERY . static::SELECT_WHERE_QUERY;
+        $pattern = static::SELECT_QUERY . static::WHERE_QUERY;
         $columns = '*';
 
         if (empty($data)) {
@@ -84,29 +145,77 @@ abstract class BaseService implements ServiceInterface
             $pattern .= implode(' ', $andWhere);
         }
 
+        $entityClass = static::getEntity();
+
+        $entity = new $entityClass();
+
         $query = sprintf($pattern, $columns, $entity->getTableName(), '1');
 
 
         $statement = $this->connection
             ->prepare($query);
 
-
         $result = [];
 
         if (
             $statement->execute($data) &&
-            $statement->rowCount()
+            $statement->rowCount() > 0
         ) {
-            $result = $statement->fetchAll(\PDO::FETCH_CLASS, get_class($entity));
+            $result = $statement->fetchAll(\PDO::FETCH_CLASS, $entityClass);
         }
 
         return $result;
     }
 
-    public function findAll(EntityInterface $entity): array
+    public function findOneBy(array $data = []): EntityInterface
     {
-        return $this->findBy([], $entity);
+
+        $pattern = static::SELECT_QUERY . static::WHERE_QUERY;
+        $columns = '*';
+
+        if (empty($data)) {
+            $pattern = static::SELECT_QUERY;
+        } else {
+            $keys = array_keys($data);
+            $andWhere = [];
+            foreach ($keys as $columnValue) {
+                $andWhere[] = sprintf(static::SELECT_AND_WHERE_QUERY, "{$columnValue} = :{$columnValue} ");
+            }
+
+            $pattern .= implode(' ', $andWhere);
+        }
+
+        $pattern .= sprintf(static::LIMIT_QUERY, 1);
+
+        $entityClass = static::getEntity();
+
+        $entity = new $entityClass();
+
+        $query = sprintf($pattern, $columns, $entity->getTableName(), '1');
+
+
+        $statement = $this->connection
+            ->prepare($query);
+
+        $result = [];
+
+        if (
+            $statement->execute($data) &&
+            $statement->rowCount() > 0
+        ) {
+            $result = $statement->fetchObject($entityClass);
+        }
+
+        return $result;
     }
 
+    /**
+     * @return array
+     * @todo, métodos de busca devem ser movidos para um repository
+     */
+    public function findAll(): array
+    {
+        return $this->findBy([]);
+    }
 
 }

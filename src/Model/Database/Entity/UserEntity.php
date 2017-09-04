@@ -24,6 +24,8 @@ class UserEntity implements EntityInterface
      */
     private $createdAt = null;
 
+    use DefaultEntityConstructor;
+
     public function getIdColumnName(): string
     {
         return 'id';
@@ -50,7 +52,7 @@ class UserEntity implements EntityInterface
      */
     public function getName(): string
     {
-        return $this->name;
+        return $this->name ?? '';
     }
 
     /**
@@ -66,7 +68,7 @@ class UserEntity implements EntityInterface
      */
     public function getEmail(): string
     {
-        return $this->email;
+        return $this->email ?? '';
     }
 
     /**
@@ -98,14 +100,11 @@ class UserEntity implements EntityInterface
         return 'user';
     }
 
-    public function toArray(): array
+    public function __set($name, $value)
     {
-        return [
-            'id' => $this->getId(),
-            'name' => $this->getName(),
-            'email' => $this->getEmail(),
-            'created_at' => $this->getCreatedAt()->format('Y-m-d H:i:s')
-        ];
+        if ($name == 'created_at') {
+            $this->setCreatedAt(new \DateTimeImmutable($value));
+        }
     }
 
 
